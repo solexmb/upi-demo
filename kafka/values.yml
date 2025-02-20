@@ -1,0 +1,40 @@
+allowPlaintextListener: true
+controller:
+  replicaCount: 0
+global:
+  storageClass: standard
+kafka:
+  persistence:
+    enabled: false
+    size: 1Gi
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 700m
+      memory: 1.5Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+persistence:
+  enabled: false
+replicaCount: 1
+resources:
+  limits:
+    memory: 1.5Gi
+  requests:
+    memory: 1Gi
+zookeeper:
+  replicaCount: 1
+  rresources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# helm upgrade --install kafka bitnami/kafka -f kafka/values.yml -n kafka
+
+# kubectl exec -it kafka-0 -n kafka -- bash
+# cd /opt/bitnami/kafka/bin/
+# ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic messages --from-beginning

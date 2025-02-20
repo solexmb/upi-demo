@@ -1,0 +1,26 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "kafka.kafka.svc.cluster.local:9092"
+    - name: consumerGroup
+      value: "service-2-group"
+    - name: topic
+      value: "messages"
+    - name: publishTopic
+      value: "messages"
+    - name: authRequired
+      value: "false"
+
+# kubectl run kafka-client -it --rm --image=bitnami/kafka:latest --namespace=kafka -- bash
+
+# helm upgrade --install kafka bitnami/kafka  --set replicaCount=1  --set controller.replicaCount=1 --set zookeeper.replicaCount=1 --set persistence.enabled=false --set allowPlaintextListener=true --set resources.requests.memory=256Mi  --set resources.limits.memory=512Mi --set controller.replicaCount=0  -n kafka -f ../kafka-values.yaml --version 23.0.7
+
+# ./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic messages --from-beginning
+
+# curl -X POST http://localhost:5000/store  -H "Content-Type: application/json" -d '{"value": "test data"}'

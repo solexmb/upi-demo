@@ -1,0 +1,26 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: service-1-scaler
+  namespace: dev-2
+spec:
+  scaleTargetRef:
+    name: service-1
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  cooldownPeriod: 10
+  pollingInterval: 10
+  triggers:
+    # - type: kafka
+    #   metadata:
+    #     bootstrapServers: "kafka.kafka.svc.cluster.local:9092"
+    #     topic: "messages"
+    #     consumerGroup: "service-2-group"
+    #     lagThreshold: "5"
+    - type: cron
+      metadata:
+        timezone: "UTC"            # Set your timezone (e.g., "America/New_York")
+        start: "10 01 * * *"       # Scale down at 22:23 UTC every day
+        end: "30 22 * * *"         # Scale back up at 22:30 UTC
+        desiredReplicas: "1"       # Reduce to 1 pod
+

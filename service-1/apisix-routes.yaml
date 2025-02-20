@@ -1,0 +1,17 @@
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: service-1-route
+  namespace: dev-2
+spec:
+  http:
+    - name: route-to-service-1
+      match:
+        # hosts:
+        #   - service-1.local
+        paths:
+          - /store
+          - /retrieve/*
+      backends:
+        - serviceName: service-1
+          servicePort: 5000

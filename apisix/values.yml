@@ -1,0 +1,12 @@
+etcd:
+  enabled: true
+  replicaCount: 1
+dashboard:
+  enabled: false
+ingress-controller: 
+  enabled: true
+  config:
+    apisix:
+      serviceNamespace: apisix-2
+
+#helm upgrade --install apisix apisix/apisix -n apisix-2 -f ../../apisix-helm/values.yml

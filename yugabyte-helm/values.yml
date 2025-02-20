@@ -1,0 +1,16 @@
+replicas:
+  master: 1
+  tserver: 1
+resource:
+  master:
+    limits:
+      memory: 512Mi
+    requests:
+      memory: 256Mi
+  tserver:
+    limits:
+      memory: 512Mi
+    requests:
+      memory: 256Mi
+
+# helm upgrade --install yugabytedb yugabytedb/yugabyte -n yugabyte -f ../../yugabyte-helm/values.yml

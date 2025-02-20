@@ -1,0 +1,33 @@
+# apiVersion: constraints.gatekeeper.sh/v1beta1
+# kind: K8sRestrictServices
+# metadata:
+#   name: restrict-services
+# spec:
+#   match:
+#     kinds:
+#       - apiGroups: [""]
+#         kinds: ["Service"]
+#   parameters:
+#     allowedNamespaces: 
+#       - "default"
+#       - "kube-system"
+#       - "prod"
+
+
+
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRestrictServices
+metadata:
+  name: restrict-services
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Service"]
+  parameters:
+    allowedNamespaces: 
+      - "default"
+      - "kube-system"
+      - "prod"
+      # - "dev-2"
+      - "keda"

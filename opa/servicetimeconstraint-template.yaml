@@ -1,0 +1,73 @@
+# apiVersion: templates.gatekeeper.sh/v1
+# kind: ConstraintTemplate
+# metadata:
+#   name: k8srestrictservices
+# spec:
+#   crd:
+#     spec:
+#       names:
+#         kind: K8sRestrictServices
+#       validation:
+#         openAPIV3Schema:
+#           type: object
+#           properties:
+#             allowedNamespaces:
+#               type: array
+#               items:
+#                 type: string
+#   targets:
+#     - target: admission.k8s.gatekeeper.sh
+#       rego: |
+#         package k8srestrictservices
+
+#         violation[{"msg": msg}] {
+#           input.review.object.kind == "Service"
+#           allowed := {ns | ns := input.parameters.allowedNamespaces[_]}
+#           not allowed[input.review.object.metadata.namespace]
+#           msg := sprintf("Services are not allowed in namespace '%s'. Allowed namespaces: %v", [input.review.object.metadata.namespace, input.parameters.allowedNamespaces])
+#         }
+
+
+
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srestrictservices
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRestrictServices
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedNamespaces:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srestrictservices
+
+        violation[{"msg": msg}] {
+          # Restrict based on namespace
+          input.review.object.kind == "Service"
+          allowed := {ns | ns := input.parameters.allowedNamespaces[_]}
+          not allowed[input.review.object.metadata.namespace]
+          msg := sprintf("Services are not allowed in namespace '%s'. Allowed namespaces: %v", [input.review.object.metadata.namespace, input.parameters.allowedNamespaces])
+        }
+
+        violation[{"msg": msg}] {
+          # Restrict based on time (09:00-17:00 UTC)
+          input.review.object.kind == "Service"
+          current_time := time.now_ns()
+          [hour, minute, second] := time.clock(current_time)
+          current_seconds := hour * 3600 + minute * 60 + second
+          start_time := 2 * 3600  # 02:00:00
+          end_time := 17 * 3600   # 17:00:00
+          current_seconds >= start_time
+          current_seconds <= end_time
+          msg := sprintf("Service creation is restricted between 02:00 and 17:00 UTC. Current time: %02d:%02d:%02d", [hour, minute, second])
+        }

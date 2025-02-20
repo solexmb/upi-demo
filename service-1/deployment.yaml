@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service-1
+  template:
+    metadata:
+      labels:
+        app: service-1
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "service-1"
+        dapr.io/app-port: "5000"
+    spec:
+      containers:
+        - name: service-1
+          image: solexb/service-1:v0.0.2
+          ports:
+            - containerPort: 5000
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: "yb-tserver-service.yugabyte.svc.cluster.local"
+            - name: DB_PORT
+              value: "5433"
+            - name: DB_NAME
+              value: "yugabyte"
+            - name: DB_USER
+              value: "yugabyte"
+            - name: DB_PASSWORD
+              value: "yugabyte"
+            - name: DAPR_URL
+              value: "http://localhost:3500"
+
+---
+# service-1-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-1
+  namespace: dev-2  # Match your namespace
+spec:
+  selector:
+    app: service-1  # Matches the labels in your service-1 Deployment
+  ports:
+    - protocol: TCP
+      port: 5000    # Port exposed by the Service
+      targetPort: 5000  # Port exposed by the Pod (matches containerPort)

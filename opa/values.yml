@@ -1,0 +1,19 @@
+audit:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+controllerManager:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+
+# helm upgrade --install gatekeeper gatekeeper/gatekeeper --namespace opa --create-namespace -f ../../opa-helm/values.yml
