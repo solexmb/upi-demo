@@ -1,0 +1,340 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Your OpenShift user-workload Prometheus datasource",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "9.0.0" },
+    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
+    { "type": "panel", "id": "gauge", "name": "Gauge", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" },
+    { "type": "panel", "id": "alertlist", "name": "Alert list", "version": "" }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "enable": true,
+        "expr": "changes(endpoint_up{url=~\"$endpoint\"}[10m]) > 0",
+        "hide": false,
+        "iconColor": "#E24B4A",
+        "name": "Status changes",
+        "step": "60s",
+        "titleFormat": "Status changed",
+        "type": "alert"
+      }
+    ]
+  },
+  "description": "Monitors HTTP endpoint uptime, response latency, and alert state. Powered by the endpoint-uptime-checker deployment.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Current status",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background", "graphMode": "none", "justifyMode": "center" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_up{url=~\"$endpoint\", namespace=~\"$namespace\"}", "instant": true, "legendFormat": "status" }]
+    },
+
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Uptime %",
+      "description": "Percentage of checks that returned the expected status in the selected time range.",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 95 }, { "color": "green", "value": 99 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["mean"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "area", "justifyMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "avg_over_time(endpoint_up{url=~\"$endpoint\", namespace=~\"$namespace\"}[$__range]) * 100", "instant": true, "legendFormat": "uptime %" }]
+    },
+
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Last response time",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 2 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none", "justifyMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_response_seconds{url=~\"$endpoint\", namespace=~\"$namespace\"}", "instant": true, "legendFormat": "latency" }]
+    },
+
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Last HTTP status code",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "range", "options": { "from": 200, "to": 299, "result": { "color": "green" } } },
+            { "type": "range", "options": { "from": 300, "to": 399, "result": { "color": "blue" } } },
+            { "type": "range", "options": { "from": 400, "to": 599, "result": { "color": "red" } } },
+            { "type": "value", "options": { "0": { "text": "Unreachable", "color": "red" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 200 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none", "justifyMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_status_code{url=~\"$endpoint\", namespace=~\"$namespace\"}", "instant": true, "legendFormat": "HTTP status" }]
+    },
+
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Time since last check",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 660 }, { "color": "red", "value": 1200 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none", "justifyMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "time() - endpoint_last_check_timestamp_seconds{url=~\"$endpoint\", namespace=~\"$namespace\"}", "instant": true, "legendFormat": "age" }]
+    },
+
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Down events",
+      "description": "Number of times endpoint_up transitioned to 0 in the selected range.",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value", "graphMode": "none", "justifyMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "changes(endpoint_up{url=~\"$endpoint\", namespace=~\"$namespace\"}[$__range]) / 2", "instant": true, "legendFormat": "down events" }]
+    },
+
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Endpoint status over time (1 = up, 0 = down)",
+      "gridPos": { "h": 7, "w": 16, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 15, "spanNulls": false, "drawStyle": "line", "lineInterpolation": "stepAfter" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "color": { "mode": "thresholds", "fixedColor": "green" },
+          "min": 0,
+          "max": 1.1,
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } } }
+          ]
+        }
+      },
+      "options": { "tooltip": { "mode": "single" }, "legend": { "displayMode": "hidden" } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_up{url=~\"$endpoint\", namespace=~\"$namespace\"}", "legendFormat": "{{url}}" }]
+    },
+
+    {
+      "id": 11,
+      "type": "alertlist",
+      "title": "Active alerts",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 4 },
+      "options": {
+        "alertInstanceLabelFilter": "url=~\"$endpoint\"",
+        "alertName": "",
+        "dashboardAlerts": false,
+        "groupBy": [],
+        "groupMode": "default",
+        "maxItems": 20,
+        "sortOrder": 1,
+        "stateFilter": { "error": true, "firing": true, "noData": false, "normal": false, "pending": true }
+      }
+    },
+
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Response latency (seconds)",
+      "gridPos": { "h": 7, "w": 16, "x": 0, "y": 11 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "spanNulls": false },
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 2 }] }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "latency" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#1D9E75", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": { "tooltip": { "mode": "single" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_response_seconds{url=~\"$endpoint\", namespace=~\"$namespace\"}", "legendFormat": "latency" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "avg_over_time(endpoint_response_seconds{url=~\"$endpoint\", namespace=~\"$namespace\"}[30m])", "legendFormat": "30m avg" }
+      ]
+    },
+
+    {
+      "id": 21,
+      "type": "gauge",
+      "title": "Uptime gauge",
+      "gridPos": { "h": 7, "w": 8, "x": 16, "y": 11 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 95 }, { "color": "green", "value": 99 }] },
+          "color": { "mode": "thresholds" }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["mean"] }, "orientation": "auto", "showThresholdLabels": true, "showThresholdMarkers": true },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "avg_over_time(endpoint_up{url=~\"$endpoint\", namespace=~\"$namespace\"}[$__range]) * 100", "instant": true, "legendFormat": "uptime %" }]
+    },
+
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "HTTP status code over time",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "lineWidth": 2, "fillOpacity": 0, "drawStyle": "line", "lineInterpolation": "stepAfter", "spanNulls": false },
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "decimals": 0
+        }
+      },
+      "options": { "tooltip": { "mode": "single" } },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_status_code{url=~\"$endpoint\", namespace=~\"$namespace\"}", "legendFormat": "HTTP {{url}}" }]
+    },
+
+    {
+      "id": 31,
+      "type": "table",
+      "title": "Endpoint summary",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": { "custom": { "displayMode": "auto" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "endpoint_up" }, "properties": [{ "id": "displayName", "value": "Status" }, { "id": "custom.displayMode", "value": "color-background" }, { "id": "mappings", "value": [{ "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }] }] },
+          { "matcher": { "id": "byName", "options": "endpoint_response_seconds" }, "properties": [{ "id": "displayName", "value": "Last latency" }, { "id": "unit", "value": "s" }, { "id": "decimals", "value": 3 }] },
+          { "matcher": { "id": "byName", "options": "endpoint_status_code" }, "properties": [{ "id": "displayName", "value": "HTTP code" }, { "id": "decimals", "value": 0 }] }
+        ]
+      },
+      "options": { "showHeader": true, "footer": { "show": false } },
+      "transformations": [
+        { "id": "merge", "options": {} },
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true }, "renameByName": { "url": "Endpoint", "namespace": "Namespace" } } }
+      ],
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_up{namespace=~\"$namespace\"}", "instant": true, "legendFormat": "" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_response_seconds{namespace=~\"$namespace\"}", "instant": true, "legendFormat": "" },
+        { "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "expr": "endpoint_status_code{namespace=~\"$namespace\"}", "instant": true, "legendFormat": "" }
+      ]
+    }
+
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "tags": ["uptime", "openshift", "monitoring"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "definition": "label_values(endpoint_up, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": { "query": "label_values(endpoint_up, namespace)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "definition": "label_values(endpoint_up{namespace=~\"$namespace\"}, url)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Endpoint",
+        "multi": true,
+        "name": "endpoint",
+        "options": [],
+        "query": { "query": "label_values(endpoint_up{namespace=~\"$namespace\"}, url)", "refId": "StandardVariableQuery" },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Endpoint uptime checker",
+  "uid": "endpoint-uptime-checker",
+  "version": 1
+}
