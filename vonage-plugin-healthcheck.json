@@ -355,8 +355,8 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 6,
-        "w": 6,
+        "h": 5,
+        "w": 4,
         "x": 0,
         "y": 7
       },
@@ -368,7 +368,7 @@
         "clusterName": "",
         "clusterUrl": "",
         "maxAlerts": -1,
-        "cornerRadius": 999,
+        "cornerRadius": "0.5rem",
         "flipPanel": false,
         "autoScrollAlertsOnOverflow": false,
         "useDisableColorIfNoData": true,
@@ -389,7 +389,7 @@
         "fontFormat": "Regular",
         "displayPosition": "Regular",
         "displayAlias": "Always",
-        "displayValue": "Never"
+        "displayValue": "Always"
       },
       "fieldConfig": {
         "defaults": {
