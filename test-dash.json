@@ -348,14 +348,14 @@
     },
     {
       "id": 101,
-      "type": "vonage-status-panel",
+      "type": "stat",
       "title": "$instance",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 0,
         "y": 7
@@ -363,37 +363,23 @@
       "repeat": "instance",
       "repeatDirection": "h",
       "maxPerRow": 6,
-      "transparent": false,
-      "options": {
-        "clusterName": "",
-        "clusterUrl": "",
-        "maxAlerts": -1,
-        "cornerRadius": "0.5rem",
-        "flipPanel": false,
-        "autoScrollAlertsOnOverflow": false,
-        "useDisableColorIfNoData": true,
-        "ignoreColorInOkState": false,
-        "hideAlertsInDisabledState": false,
-        "coloringMode": "Panel",
-        "colors": {
-          "crit": "#d44a3a",
-          "warn": "#e0b400",
-          "ok": "#299c46",
-          "disabled": "#c4c4c4"
-        },
-        "thresholdType": "Number Threshold",
-        "criticalValue": 0.1,
-        "warningValue": 0.9,
-        "aggregation": "Last",
-        "valueRegex": "",
-        "fontFormat": "Regular",
-        "displayPosition": "Regular",
-        "displayAlias": "Always",
-        "displayValue": "Always"
-      },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "DOWN"
+                },
+                "1": {
+                  "text": "UP"
+                }
+              }
+            }
+          ],
+          "noValue": "N/A",
           "color": {
             "mode": "thresholds"
           },
@@ -406,13 +392,26 @@
               },
               {
                 "color": "green",
-                "value": 0.9
+                "value": 1
               }
             ]
-          },
-          "noValue": "-"
+          }
         },
         "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "textMode": "value_and_name",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
       },
       "targets": [
         {
