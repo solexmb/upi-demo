@@ -355,30 +355,65 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 4,
+        "h": 6,
+        "w": 6,
         "x": 0,
         "y": 7
       },
       "repeat": "instance",
       "repeatDirection": "h",
       "maxPerRow": 6,
-      "thresholds": "0,0.5",
-      "colors": [
-        "#d44a3a",
-        "#e0b400",
-        "#299c46"
-      ],
-      "colorValue": true,
-      "colorPrefix": true,
-      "colorPostfix": false,
-      "displayValueWithAlias": "Regular",
-      "displayAliasType": "Regular",
-      "warningPointColor": "custom",
-      "criticalPointColor": "custom",
-      "okColor": "#299c46",
-      "warningColor": "#e0b400",
-      "criticalColor": "#d44a3a",
+      "transparent": false,
+      "options": {
+        "clusterName": "",
+        "clusterUrl": "",
+        "maxAlerts": -1,
+        "cornerRadius": 999,
+        "flipPanel": false,
+        "autoScrollAlertsOnOverflow": false,
+        "useDisableColorIfNoData": true,
+        "ignoreColorInOkState": false,
+        "hideAlertsInDisabledState": false,
+        "coloringMode": "Panel",
+        "colors": {
+          "crit": "#d44a3a",
+          "warn": "#e0b400",
+          "ok": "#299c46",
+          "disabled": "#c4c4c4"
+        },
+        "thresholdType": "Number Threshold",
+        "criticalValue": 0,
+        "warningValue": 0.5,
+        "aggregation": "Last",
+        "valueRegex": "",
+        "fontFormat": "Regular",
+        "displayPosition": "Regular",
+        "displayAlias": "Always",
+        "displayValue": "Never"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "-"
+        },
+        "overrides": []
+      },
       "targets": [
         {
           "refId": "A",
