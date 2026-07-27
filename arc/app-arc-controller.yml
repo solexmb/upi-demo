@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-controller
+  namespace: argocd
+  annotations:
+    # Controller must land before the runner scale set (which needs its CRDs)
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  # Multi-source app: chart comes from the OCI registry, values come from your Git repo
+  sources:
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts
+      chart: gha-runner-scale-set-controller
+      targetRevision: "0.9.3"
+      helm:
+        valueFiles:
+          - $values/argocd-apps/arc-controller/values.yaml
+    - repoURL: https://github.com/<your-org>/<your-gitops-repo>.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-systems
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true   # important: CRDs are large, SSA avoids the 3-way merge annotation limit
