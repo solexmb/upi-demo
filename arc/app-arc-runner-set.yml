@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runner-set
+  namespace: argocd
+  annotations:
+    # Must sync AFTER arc-controller (needs its CRDs to exist first)
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts
+      chart: gha-runner-scale-set
+      targetRevision: "0.9.3"     # pin the same version as the controller
+      helm:
+        valueFiles:
+          - $values/argocd-apps/arc-runner-set/values.yaml
+    - repoURL: https://github.com/<your-org>/<your-gitops-repo>.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+  # Optional but recommended: block sync if the controller Application isn't Healthy
+  # (ArgoCD doesn't have native "depends on another Application" — sync-wave ordering
+  # handles this in most cases; use an ApplicationSet + Argo CD Sync Waves + Health
+  # checks, or an Argo Workflow pre-sync hook, for hard dependency guarantees.)
