@@ -1,0 +1,16 @@
+I wanted to follow up before you create the App Registration — we'd like to take a different approach that avoids a client secret entirely.
+
+Instead of a traditional App Registration with a client secret, we're using a Managed Identity (already provisioned via Terraform) that authenticates through Workload Identity Federation from our AKS-hosted GitLab runner. This means:
+
+- No client secret is created, stored, or rotated — authentication happens via short-lived, automatically-issued tokens tied to the Kubernetes service account running the pipeline job.
+- We already have the Client (Application) ID and Tenant ID for this identity.
+- There's nothing further needed from you on the Entra ID side — the identity and its federated credential already exist.
+
+What we do need instead is for this Managed Identity to be registered as an Application User in the target Power Platform environment, with an appropriate Dataverse security role (we're thinking System Customizer, scoped to deployment/customization rights rather than full admin — happy to discuss if a different role fits better).
+
+Here's what I can share for that step:
+- Application/Client ID: [client_id]
+- Tenant ID: [tenant_id]
+- Target environment: [environment name/URL]
+
+Could you help set this up, or point me to whoever manages Application Users for this environment? Happy to hop on a call if it's easier to walk through.
